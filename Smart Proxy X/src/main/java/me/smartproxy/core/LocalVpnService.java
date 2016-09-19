@@ -6,7 +6,9 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -29,10 +31,14 @@ import android.net.VpnService;
 import android.os.Build;
 import android.os.Handler;
 import android.os.ParcelFileDescriptor;
+import android.util.Log;
 
 public class LocalVpnService extends VpnService implements Runnable {
 
-    public static LocalVpnService Instance;
+	private static final String TAG = LocalVpnService.class.getName();
+
+
+	public static LocalVpnService Instance;
     public static String ConfigUrl;
 	public static boolean IsRunning = false;
 
@@ -171,10 +177,12 @@ public class LocalVpnService extends VpnService implements Runnable {
 			ChinaIpMaskManager.loadFromFile(getResources().openRawResource(R.raw.ipmask));//加载中国的IP段，用于IP分流。
 			waitUntilPreapred();//检查是否准备完毕。
 
+			//启动进行转发的TCP Server
 			m_TcpProxyServer = new TcpProxyServer(0);
 			m_TcpProxyServer.start();
 			writeLog("LocalTcpServer started.");
 
+			//启动DNS 代理服务器，目前TCP代理只能处理TCP包，对于DNS请求，需要单独代理
 			m_DnsProxy = new DnsProxy();
 			m_DnsProxy.start();
 			writeLog("LocalDnsProxy started.");
@@ -200,15 +208,16 @@ public class LocalVpnService extends VpnService implements Runnable {
 						continue;
 					}
 					
-					
 					writeLog("Load config success.");
 					String welcomeInfoString=ProxyConfig.Instance.getWelcomeInfo();
 					if(welcomeInfoString!=null&&!welcomeInfoString.isEmpty()){
 						writeLog("%s", ProxyConfig.Instance.getWelcomeInfo());
 					}
- 
+
+					//执行到这里，VPN已经建立起来了，执行真正的VPN转发
 					runVPN();
 				} else {
+					//VPN被关掉之后，循环依然执行，每次sleep 100毫秒
 					Thread.sleep(100);
 				}
 			}
@@ -223,13 +232,17 @@ public class LocalVpnService extends VpnService implements Runnable {
 		}
 	}
 
+	/**
+	 * 真正的VPN数据处理逻辑，其实是个无限循环，不停地去读取数据
+	 * @throws Exception
+     */
 	private void runVPN() throws Exception {
 		this.m_VPNInterface = establishVPN();
 		this.m_VPNOutputStream = new FileOutputStream(m_VPNInterface.getFileDescriptor());
 		FileInputStream in = new FileInputStream(m_VPNInterface.getFileDescriptor());
 		int size = 0;
 		while (size != -1 && IsRunning) {
-			while ((size = in.read(m_Packet)) > 0 && IsRunning) {
+			while ((size = in.read(m_Packet)) > 0 && IsRunning) {  //read是阻塞操作，未读取到数据会一直阻塞
 				if(m_DnsProxy.Stopped||m_TcpProxyServer.Stopped){
 					in.close();
 					throw new Exception("LocalServer stopped.");
@@ -241,14 +254,22 @@ public class LocalVpnService extends VpnService implements Runnable {
 		in.close();
 		disconnectVPN();
 	}
-	
+
+	/**
+	 * 读取到VPN中（也就是虚拟网卡）的包之后的处理过程
+	 * @param ipHeader
+	 * @param size
+	 * @throws IOException
+     */
 	void onIPPacketReceived(IPHeader ipHeader, int size) throws IOException {
 		switch (ipHeader.getProtocol()) {
 		case IPHeader.TCP:
 			TCPHeader tcpHeader =m_TCPHeader;
 			tcpHeader.m_Offset=ipHeader.getHeaderLength();
 			if (ipHeader.getSourceIP() == LOCAL_IP) {
-				if (tcpHeader.getSourcePort() == m_TcpProxyServer.Port) {// 收到本地TCP服务器数据
+				// 收到来自本地TCP代理服务器数据，说明是隧道返回的数据
+				// 查询之前的NAT映射表，修改目标地址，再次写入VPN流
+				if (tcpHeader.getSourcePort() == m_TcpProxyServer.Port) {
 					NatSession session =NatSessionManager.getSession(tcpHeader.getDestinationPort());
 					if (session != null) {
 						ipHeader.setSourceIP(ipHeader.getDestinationIP());
@@ -262,7 +283,8 @@ public class LocalVpnService extends VpnService implements Runnable {
 						System.out.printf("NoSession: %s %s\n", ipHeader.toString(),tcpHeader.toString());
 					}
 				} else {
-					
+					//从VPN流中读取到发送出去的包，则需要建立NAT映射，并将其转发到TCP代理服务器（转发其实是重新又写入了VPN流中）
+
 					// 添加端口映射
 					int portKey=tcpHeader.getSourcePort();
 					NatSession session=NatSessionManager.getSession(portKey);
@@ -300,7 +322,7 @@ public class LocalVpnService extends VpnService implements Runnable {
 			}
 			break;
 		case IPHeader.UDP:
-			// 转发DNS数据包：
+			// 转发DNS数据包：目前只通过DNS代理处理了DNS查询的UDP包，其他数据直接丢弃了
 			UDPHeader udpHeader =m_UDPHeader;
 			udpHeader.m_Offset=ipHeader.getHeaderLength();
 			if (ipHeader.getSourceIP() == LOCAL_IP && udpHeader.getDestinationPort() == 53) {
@@ -310,6 +332,9 @@ public class LocalVpnService extends VpnService implements Runnable {
 				if(dnsPacket!=null&&dnsPacket.Header.QuestionCount>0){
 					m_DnsProxy.onDnsRequestReceived(ipHeader, udpHeader, dnsPacket);
 				}
+			}else {
+				//TODO does not support UDP proxy
+				Log.w(TAG, "a UDP packet is dropped:" + ipHeader.getDestinationIP());
 			}
 			break;
 		}
@@ -325,6 +350,11 @@ public class LocalVpnService extends VpnService implements Runnable {
 		}
 	}
 
+	/**
+	 * 关键部分，告诉系统，建立VPN连接，获得ParcelFileDescriptor以便操作IP包
+	 * @return
+	 * @throws Exception
+     */
 	private ParcelFileDescriptor establishVPN() throws Exception {
 		Builder builder = new Builder();
 		builder.setMtu(ProxyConfig.Instance.getMTU());
@@ -342,7 +372,8 @@ public class LocalVpnService extends VpnService implements Runnable {
 			if(ProxyConfig.IS_DEBUG)
 				System.out.printf("addDnsServer: %s\n", dns.Address);
 		}
-		
+
+		//自定义路由设置
 		if(ProxyConfig.Instance.getRouteList().size()>0){
 			for (ProxyConfig.IPAddress routeAddress : ProxyConfig.Instance.getRouteList()) {
 				builder.addRoute(routeAddress.Address,routeAddress.PrefixLength);
@@ -359,10 +390,11 @@ public class LocalVpnService extends VpnService implements Runnable {
 				System.out.printf("addDefaultRoute: 0.0.0.0/0\n");
 		}
 		
- 
+
+		//为系统的DNS添加路由设置，DNS必须通过VPN
 		Class<?> SystemProperties = Class.forName("android.os.SystemProperties");
 		Method method = SystemProperties.getMethod("get", new Class[] { String.class });
-		ArrayList<String> servers = new ArrayList<String>();
+		Set<String> servers = new HashSet<String>();
 		for (String name : new String[] { "net.dns1", "net.dns2", "net.dns3", "net.dns4", }) {
 			String value = (String) method.invoke(null, name);
 			if (value != null && !"".equals(value) && !servers.contains(value)) {
@@ -382,7 +414,10 @@ public class LocalVpnService extends VpnService implements Runnable {
 		onStatusChanged(ProxyConfig.Instance.getSessionName()+getString(R.string.vpn_connected_status), true);
 		return pfdDescriptor;
 	}
-	
+
+	/**
+	 * 断开VPN，主要是关闭之前获得的ParcelFileDescriptor
+	 */
 	public void disconnectVPN() {
 		try {
 			if (m_VPNInterface != null) {
