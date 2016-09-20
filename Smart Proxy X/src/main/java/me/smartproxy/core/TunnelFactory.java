@@ -12,12 +12,29 @@ import me.smartproxy.tunnel.httpconnect.HttpConnectTunnel;
 import me.smartproxy.tunnel.shadowsocks.ShadowsocksConfig;
 import me.smartproxy.tunnel.shadowsocks.ShadowsocksTunnel;
 
+/**
+ * 创建隧道的工厂
+ */
 public class TunnelFactory {
-	
+
+	/**
+	 * 将SocketChannel和Selector包装成隧道，主要用于本地的隧道（Local Tunnel）
+	 * @param channel
+	 * @param selector
+     * @return
+     */
 	public static Tunnel wrap(SocketChannel channel,Selector selector){
 		return new RawTunnel(channel, selector);
 	}
- 
+
+
+	/**
+	 * 根据配置创建隧道，主要用户创建远程的隧道
+	 * @param destAddress
+	 * @param selector
+	 * @return
+	 * @throws Exception
+     */
 	public static Tunnel createTunnelByConfig(InetSocketAddress destAddress,Selector selector) throws Exception {
 		if(destAddress.isUnresolved()){
 			Config config=ProxyConfig.Instance.getDefaultTunnelConfig(destAddress);

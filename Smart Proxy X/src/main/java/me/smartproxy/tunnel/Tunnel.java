@@ -12,6 +12,10 @@ import java.nio.channels.SocketChannel;
 import me.smartproxy.core.LocalVpnService;
 import me.smartproxy.core.ProxyConfig;
 
+
+/**
+ * Tunnel类
+ */
 public abstract class Tunnel {
 
 	final static ByteBuffer GL_BUFFER=ByteBuffer.allocate(20000);

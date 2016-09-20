@@ -15,6 +15,9 @@ import me.smartproxy.tunnel.Tunnel;
 import me.smartproxy.tunnel.httpconnect.HttpConnectConfig;
 import me.smartproxy.tunnel.shadowsocks.ShadowsocksConfig;
 
+/**
+ * TCP代理服务器，用来转发VPN的数据包到Tunnel
+ */
 public class TcpProxyServer implements Runnable {
 
 	public boolean Stopped;
@@ -23,7 +26,8 @@ public class TcpProxyServer implements Runnable {
 	Selector m_Selector;
 	ServerSocketChannel m_ServerSocketChannel;
 	Thread m_ServerThread;
- 
+
+	//构造函数，初始化监听，使用了ServerSocketChannel和Selector机制
 	public TcpProxyServer(int port) throws IOException {
 		m_Selector = Selector.open();
 		m_ServerSocketChannel = ServerSocketChannel.open();
@@ -33,13 +37,15 @@ public class TcpProxyServer implements Runnable {
 		this.Port=(short) m_ServerSocketChannel.socket().getLocalPort();
 		System.out.printf("AsyncTcpServer listen on %d success.\n", this.Port&0xFFFF);
 	}
-	
+
+	//启动方法，其实是启动线程进行selector轮询
 	public void start(){
 		m_ServerThread=new Thread(this);
 		m_ServerThread.setName("TcpProxyServerThread");
 		m_ServerThread.start();
 	}
-	
+
+	//停止代理服务器
 	public void stop(){
 		this.Stopped=true;
 		if(m_Selector!=null){
@@ -60,7 +66,8 @@ public class TcpProxyServer implements Runnable {
 			}
 		}
 	}
-	
+
+	//线程内部，不停地对selector进行select操作
 	@Override
 	public void run() {
 		try {
@@ -98,6 +105,11 @@ public class TcpProxyServer implements Runnable {
 		}
 	}
 
+	/**
+	 * 获取从VPN过来的连接的真实连接地址，通过NAT表进行查询
+	 * @param localChannel
+	 * @return
+     */
 	InetSocketAddress getDestAddress(SocketChannel localChannel){
 		short portKey=(short)localChannel.socket().getPort();
 		NatSession session =NatSessionManager.getSession(portKey);

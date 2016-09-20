@@ -2,6 +2,10 @@ package me.smartproxy.dns;
 
 import me.smartproxy.tcpip.CommonMethods;
 
+
+/**
+ * 用来修改DNS响应的辅助类
+ */
 public class ResourcePointer {
 	static final short offset_Domain = 0;
 	static final short offset_Type = 2;

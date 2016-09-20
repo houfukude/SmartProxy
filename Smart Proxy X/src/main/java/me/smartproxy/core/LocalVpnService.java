@@ -5,14 +5,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-import me.smartproxy.core.ProxyConfig.IPAddress;
 import me.smartproxy.dns.DnsPacket;
 import me.smartproxy.tcpip.CommonMethods;
 import me.smartproxy.tcpip.IPHeader;
@@ -367,7 +365,7 @@ public class LocalVpnService extends VpnService implements Runnable {
 		if(ProxyConfig.IS_DEBUG)
 			System.out.printf("addAddress: %s/%d\n", ipAddress.Address,ipAddress.PrefixLength);
 		
-		for (ProxyConfig.IPAddress dns : ProxyConfig.Instance.getDnsList()) {
+		for (IPAddress dns : ProxyConfig.Instance.getDnsList()) {
 			builder.addDnsServer(dns.Address);
 			if(ProxyConfig.IS_DEBUG)
 				System.out.printf("addDnsServer: %s\n", dns.Address);
@@ -375,7 +373,7 @@ public class LocalVpnService extends VpnService implements Runnable {
 
 		//自定义路由设置
 		if(ProxyConfig.Instance.getRouteList().size()>0){
-			for (ProxyConfig.IPAddress routeAddress : ProxyConfig.Instance.getRouteList()) {
+			for (IPAddress routeAddress : ProxyConfig.Instance.getRouteList()) {
 				builder.addRoute(routeAddress.Address,routeAddress.PrefixLength);
 				if(ProxyConfig.IS_DEBUG)
 					System.out.printf("addRoute: %s/%d\n", routeAddress.Address,routeAddress.PrefixLength);

@@ -18,6 +18,9 @@ import me.smartproxy.tcpip.UDPHeader;
 import android.util.SparseArray;
 
 
+/**
+ * DNS代理
+ */
 public class DnsProxy implements Runnable {
 	
 	private class QueryState
@@ -111,7 +114,14 @@ public class DnsProxy implements Runnable {
 		}
 		return 0;
 	}
-	
+
+
+	/**
+	 * 修改原始的DNS响应
+	 * @param rawPacket
+	 * @param dnsPacket
+	 * @param newIP
+     */
 	private void tamperDnsResponse(byte[] rawPacket,DnsPacket dnsPacket,int newIP){
 		Question question=dnsPacket.Questions[0];
 		
