@@ -1,5 +1,8 @@
 package me.smartproxy.tcpip;
 
+/**
+ * UDP报文头, 8个字节
+ */
 public class UDPHeader {
 	static final short offset_src_port = 0; // Source port
 	static final short offset_dest_port = 2; // Destination port

@@ -2,12 +2,16 @@ package me.smartproxy.dns;
 
 import java.nio.ByteBuffer;
 
+/**
+ * DNS报文
+ *
+ */
 public class DnsPacket {
-	public DnsHeader Header;
-	public Question[] Questions;
-	public Resource[] Resources;
-	public Resource[] AResources;
-	public Resource[] EResources;
+	public DnsHeader Header;		//头部,总共12字节
+	public Question[] Questions;	//查询问题
+	public Resource[] Resources;	//回答
+	public Resource[] AResources;	//授权信息
+	public Resource[] EResources;	//额外的信息
 
 	public int Size;
 	
@@ -94,39 +98,46 @@ public class DnsPacket {
 		}
 	}
 
-	public static String ReadDomain(ByteBuffer buffer,int dnsHeaderOffset)
-	{
+	/**
+	 * 从DNS查询中读取域名信息
+	 * @param buffer
+	 * @param dnsHeaderOffset
+     * @return
+     */
+	public static String ReadDomain(ByteBuffer buffer, int dnsHeaderOffset) {
 		StringBuilder sb = new StringBuilder();
 		int len = 0;
-		while (buffer.hasRemaining() && (len = (buffer.get() & 0xFF)) > 0)
-		{
+		while (buffer.hasRemaining() && (len = (buffer.get() & 0xFF)) > 0) {
 			if ((len & 0xc0) == 0xc0)// pointer 高2位为11表示是指针。如：1100 0000
 			{
 				// 指针的取值是前一字节的后6位加后一字节的8位共14位的值。
 				int pointer = buffer.get() & 0xFF;// 低8位
 				pointer |= (len & 0x3F) << 8;// 高6位
 
-				ByteBuffer newBuffer = ByteBuffer.wrap(buffer.array(), dnsHeaderOffset + pointer, dnsHeaderOffset+buffer.limit());
-				sb.append(ReadDomain(newBuffer,dnsHeaderOffset));
+				ByteBuffer newBuffer = ByteBuffer.wrap(buffer.array(), dnsHeaderOffset + pointer, dnsHeaderOffset + buffer.limit());
+				sb.append(ReadDomain(newBuffer, dnsHeaderOffset));
 				return sb.toString();
-			}
-			else
-			{
-				while (len > 0 && buffer.hasRemaining())
-				{
+			} else {
+				while (len > 0 && buffer.hasRemaining()) {
 					sb.append((char) (buffer.get() & 0xFF));
 					len--;
 				}
 				sb.append('.');
 			}
 		}
-		
-		if(len==0&&sb.length()>0){
-			sb.deleteCharAt(sb.length()-1);//去掉末尾的点（.）
+
+		if (len == 0 && sb.length() > 0) {
+			sb.deleteCharAt(sb.length() - 1);//去掉末尾的点（.）
 		}
 		return sb.toString();
 	}
 
+	/**
+	 * 写入的域名格式为:以首字节数的计数值来说明该标示符长度，每个名字以0结束。计数字节数必须是0~63之间
+	 * 比如:gemini.tuc.noao.edu 为: 6gemini3tuc4noao3edu0
+	 * @param domain
+	 * @param buffer
+     */
 	public static void WriteDomain(String domain, ByteBuffer buffer)
 	{
 		if (domain == null || domain == "")

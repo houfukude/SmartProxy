@@ -4,27 +4,29 @@ import java.nio.ByteBuffer;
 
 import me.smartproxy.tcpip.CommonMethods;
 
-
+/**
+ * DNS头部信息,总共12字节
+ */
 public class DnsHeader {
-	 public short ID;
-     public DnsFlags Flags;
-     public short QuestionCount;
-     public short ResourceCount;
-     public short AResourceCount;
-     public short EResourceCount;
-     
-     public static DnsHeader FromBytes(ByteBuffer buffer) {
-    	 DnsHeader header=new DnsHeader(buffer.array(),buffer.arrayOffset()+buffer.position());
-    	 header.ID=buffer.getShort();
-    	 header.Flags=DnsFlags.Parse(buffer.getShort());
-    	 header.QuestionCount=buffer.getShort();
-    	 header.ResourceCount=buffer.getShort();
-    	 header.AResourceCount=buffer.getShort();
-    	 header.EResourceCount=buffer.getShort();
-    	 return header;
-     }
-     
-     public void ToBytes(ByteBuffer buffer)
+	 public short ID;				//查询ID
+     public DnsFlags Flags;			//标志位,2字节
+     public short QuestionCount;	//查询数量
+     public short ResourceCount;	//回答数量
+     public short AResourceCount;	//授权信息数量
+     public short EResourceCount;	//额外信息数量
+
+	public static DnsHeader FromBytes(ByteBuffer buffer) {
+		DnsHeader header = new DnsHeader(buffer.array(), buffer.arrayOffset() + buffer.position());
+		header.ID = buffer.getShort();
+		header.Flags = DnsFlags.Parse(buffer.getShort());
+		header.QuestionCount = buffer.getShort();
+		header.ResourceCount = buffer.getShort();
+		header.AResourceCount = buffer.getShort();
+		header.EResourceCount = buffer.getShort();
+		return header;
+	}
+
+	public void ToBytes(ByteBuffer buffer)
      {
           buffer.putShort(this.ID);
           buffer.putShort(this.Flags.ToShort());

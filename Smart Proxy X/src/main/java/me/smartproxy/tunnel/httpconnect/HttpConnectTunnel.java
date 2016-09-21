@@ -3,16 +3,15 @@ package me.smartproxy.tunnel.httpconnect;
 import android.util.Base64;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.Selector;
-import java.nio.channels.SocketChannel;
-import java.text.Bidi;
 
 import me.smartproxy.core.ProxyConfig;
 import me.smartproxy.tunnel.Tunnel;
 
+/**
+ * 基于http的隧道,使用http tunnel技术,即先进行CONNECT
+ */
 public class HttpConnectTunnel extends Tunnel {
 
     private boolean m_TunnelEstablished;

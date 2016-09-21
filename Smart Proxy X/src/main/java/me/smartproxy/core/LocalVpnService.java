@@ -63,11 +63,14 @@ public class LocalVpnService extends VpnService implements Runnable {
 		ID++;
 		m_Handler=new Handler();
 		m_Packet = new byte[20000];
+
+		//无论是IP、TCP、UDP或者DNS请求,其存储的时候,底层都是m_Packet,所以修改的时候对整个数据包都有影响
 		m_IPHeader = new IPHeader(m_Packet, 0);
-		m_TCPHeader=new TCPHeader(m_Packet, 20);
-		m_UDPHeader=new UDPHeader(m_Packet, 20);
-		m_DNSBuffer=((ByteBuffer)ByteBuffer.wrap(m_Packet).position(28)).slice();
-		Instance=this; 
+		m_TCPHeader = new TCPHeader(m_Packet, 20);   //去除20字节的IP头
+		m_UDPHeader = new UDPHeader(m_Packet, 20);	 //去除20字节的IP头
+		m_DNSBuffer = ((ByteBuffer) ByteBuffer.wrap(m_Packet).position(28)).slice(); //去除20字节的IP头和8个字节UDP头
+
+		Instance=this;
 		
 		System.out.printf("New VPNService(%d)\n",ID);
 	}
@@ -319,21 +322,22 @@ public class LocalVpnService extends VpnService implements Runnable {
 				}
 			}
 			break;
-		case IPHeader.UDP:
-			// 转发DNS数据包：目前只通过DNS代理处理了DNS查询的UDP包，其他数据直接丢弃了
-			UDPHeader udpHeader =m_UDPHeader;
-			udpHeader.m_Offset=ipHeader.getHeaderLength();
-			if (ipHeader.getSourceIP() == LOCAL_IP && udpHeader.getDestinationPort() == 53) {
-				m_DNSBuffer.clear();
-				m_DNSBuffer.limit(ipHeader.getDataLength() - 8);
-				DnsPacket dnsPacket=DnsPacket.FromBytes(m_DNSBuffer);
-				if(dnsPacket!=null&&dnsPacket.Header.QuestionCount>0){
-					m_DnsProxy.onDnsRequestReceived(ipHeader, udpHeader, dnsPacket);
+			case IPHeader.UDP:
+				UDPHeader udpHeader = m_UDPHeader;
+				udpHeader.m_Offset = ipHeader.getHeaderLength();
+
+				// 转发DNS数据包：目前只通过DNS代理处理了DNS查询的UDP包，其他数据直接丢弃了
+				if (ipHeader.getSourceIP() == LOCAL_IP && udpHeader.getDestinationPort() == 53) {
+					m_DNSBuffer.clear();
+					m_DNSBuffer.limit(ipHeader.getDataLength() - 8);
+					DnsPacket dnsPacket = DnsPacket.FromBytes(m_DNSBuffer);
+					if (dnsPacket != null && dnsPacket.Header.QuestionCount > 0) {
+						m_DnsProxy.onDnsRequestReceived(ipHeader, udpHeader, dnsPacket);
+					}
+				} else {
+					//TODO UDP packet not supported
+					Log.w(TAG, "a UDP packet is dropped:" + ipHeader.getDestinationIP());
 				}
-			}else {
-				//TODO does not support UDP proxy
-				Log.w(TAG, "a UDP packet is dropped:" + ipHeader.getDestinationIP());
-			}
 			break;
 		}
 	}
