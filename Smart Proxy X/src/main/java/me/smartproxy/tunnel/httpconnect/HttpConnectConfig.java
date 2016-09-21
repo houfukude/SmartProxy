@@ -5,6 +5,9 @@ import java.net.InetSocketAddress;
 import android.net.Uri;
 import me.smartproxy.tunnel.Config;
 
+/**
+ * http代理服务器配置
+ */
 public class HttpConnectConfig extends Config {
 	public String UserName;
 	public String Password;

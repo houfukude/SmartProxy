@@ -54,6 +54,8 @@ public class ProxyConfig {
 	 */
 	boolean m_isolate_http_host_header=true;	//配置是否使用m_isolate_http_host_header，通过isolate_http_host_header进行配置
     int m_mtu;									//配置VPN的mtu，默认为20000，值必须在1400和20000之间
+
+	boolean m_is_global_mode = true; 			//是否使用全局代理
     
     Timer m_Timer;
 
@@ -213,6 +215,10 @@ public class ProxyConfig {
      * @return
      */
     public boolean needProxy(String host,int ip){
+		if (m_is_global_mode){
+			return true;
+		}
+
     	if(host!=null){
     		Boolean stateBoolean=getDomainState(host);
     		if(stateBoolean!=null){

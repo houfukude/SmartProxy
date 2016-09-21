@@ -59,7 +59,8 @@ public abstract class Tunnel {
     
 	private SocketChannel m_InnerChannel;			//连接到远程VPN（代理）服务器的连接
 
-	final static ByteBuffer GL_BUFFER = ByteBuffer.allocate(20000);		//读数据的Buffer
+	protected final static ByteBuffer GL_BUFFER = ByteBuffer.allocate(20000);		//读数据的Buffer
+
 	private ByteBuffer m_SendRemainBuffer;			//待发送数据
 
 	private Selector m_Selector;					//使用的Selector，与Tcp代理服务器使用的是同一个Selector，轮询在TcpProxyServer里面
