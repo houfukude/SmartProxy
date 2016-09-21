@@ -5,6 +5,9 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 
+/**
+ * 无需做任何额外的数据处理的隧道,主要用于本地连接
+ */
 public class RawTunnel extends Tunnel {
 
 	public RawTunnel(InetSocketAddress serverAddress,Selector selector) throws Exception{
@@ -13,7 +16,6 @@ public class RawTunnel extends Tunnel {
 	
 	public RawTunnel(SocketChannel innerChannel, Selector selector) {
 		super(innerChannel, selector);
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
@@ -23,14 +25,12 @@ public class RawTunnel extends Tunnel {
 
 	@Override
 	protected void beforeSend(ByteBuffer buffer) throws Exception {
-		// TODO Auto-generated method stub
-		
+		//无需处理
 	}
 
 	@Override
 	protected void afterReceived(ByteBuffer buffer) throws Exception {
-		// TODO Auto-generated method stub
-		
+		//无需处理
 	}
 
 	@Override
@@ -40,8 +40,7 @@ public class RawTunnel extends Tunnel {
 
 	@Override
 	protected void onDispose() {
-		// TODO Auto-generated method stub
-		
+		//无需处理
 	}
 
 }

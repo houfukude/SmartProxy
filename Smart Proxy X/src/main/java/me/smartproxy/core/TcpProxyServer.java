@@ -78,16 +78,16 @@ public class TcpProxyServer implements Runnable {
 					SelectionKey key = keyIterator.next();
 					if (key.isValid()) {
 						try {
-							    if (key.isReadable()) {
+							    if (key.isReadable()) {//本地或者远程隧道可写
 							    	((Tunnel)key.attachment()).onReadable(key);
 								}
-							    else if(key.isWritable()){
+							    else if(key.isWritable()){//本地或者远程隧道可写
 							    	((Tunnel)key.attachment()).onWritable(key);
 							    }
-							    else if (key.isConnectable()) {
+							    else if (key.isConnectable()) { //远程隧道连接成功，此时的Tunnel为远程隧道。本地隧道不会有connect事件
 							    	((Tunnel)key.attachment()).onConnectable();
 								}
-							    else  if (key.isAcceptable()) {
+							    else  if (key.isAcceptable()) { //本地Tcp代理服务器收到新的连接
 									onAccepted(key);
 								}
 						} catch (Exception e) {
@@ -124,28 +124,38 @@ public class TcpProxyServer implements Runnable {
 		}
 		return null;
 	}
-	
-	void onAccepted(SelectionKey key){
-		Tunnel localTunnel =null;
-		try {
-			SocketChannel localChannel=m_ServerSocketChannel.accept();
-			localTunnel=TunnelFactory.wrap(localChannel, m_Selector);
 
-			InetSocketAddress destAddress=getDestAddress(localChannel);
-			if(destAddress!=null){
-				Tunnel remoteTunnel=TunnelFactory.createTunnelByConfig(destAddress,m_Selector);
+	/**
+	 * 建立连接
+	 *
+	 * @param key
+	 */
+	void onAccepted(SelectionKey key) {
+		Tunnel localTunnel = null;
+		try {
+			//在LocalVpnService里面，已经将发出去的包进行了修改，目标IP和端口为本代理服务器，源IP和端口即为发起网络连接的本地进程
+			//所以本地隧道相当于直接与进程打通，远程隧道的数据直接发送到本地隧道即可到达对应的进程
+
+			SocketChannel localChannel = m_ServerSocketChannel.accept(); //来自本地客户端的连接
+			localTunnel = TunnelFactory.wrap(localChannel, m_Selector);
+
+			//根据本地连接，获取要连接的远程地址
+			InetSocketAddress destAddress = getDestAddress(localChannel);
+			if (destAddress != null) {
+
+				//创建隧道连接，这里将本地的连接也封装成隧道，然后根据本地连接要连接的远程地址，创建一个远程的连接，并且将两个连接关联起来（相当于将两个隧道接在一起）
+				Tunnel remoteTunnel = TunnelFactory.createTunnelByConfig(destAddress, m_Selector);
 				remoteTunnel.setBrotherTunnel(localTunnel);//关联兄弟
 				localTunnel.setBrotherTunnel(remoteTunnel);//关联兄弟
-				remoteTunnel.connect(destAddress);//开始连接
-			}
-			else {
-				LocalVpnService.Instance.writeLog("Error: socket(%s:%d) target host is null.",localChannel.socket().getInetAddress().toString(),localChannel.socket().getPort());
+				remoteTunnel.connect(destAddress);//开始连接到远程VPN(代理)服务器
+			} else {
+				LocalVpnService.Instance.writeLog("Error: socket(%s:%d) target host is null.", localChannel.socket().getInetAddress().toString(), localChannel.socket().getPort());
 				localTunnel.dispose();
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			LocalVpnService.Instance.writeLog("Error: remote socket create failed: %s",e.toString());
-			if(localTunnel!=null){
+			LocalVpnService.Instance.writeLog("Error: remote socket create failed: %s", e.toString());
+			if (localTunnel != null) {
 				localTunnel.dispose();
 			}
 		}

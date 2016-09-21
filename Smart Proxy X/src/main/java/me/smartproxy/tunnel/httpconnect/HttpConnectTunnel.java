@@ -20,6 +20,14 @@ public class HttpConnectTunnel extends Tunnel {
 		m_Config=config;
 	}
 
+
+	/**
+	 * so easy？<br/>
+	 * http代理在请求之前只需要发送个CONNECT指令就行了？
+	 *
+	 * @param buffer
+	 * @throws Exception
+     */
 	@Override
 	protected void onConnected(ByteBuffer buffer) throws Exception {
 		String request = String.format("CONNECT %s:%d HTTP/1.0\r\nProxy-Connection: keep-alive\r\nUser-Agent: %s\r\nX-App-Install-ID: %s\r\n\r\n", 
@@ -36,6 +44,12 @@ public class HttpConnectTunnel extends Tunnel {
 		}
 	}
 
+
+	/**
+	 * 尝试发送请求头的一部分，让请求头的host在第二个包里面发送，从而绕过机房的白名单机制
+	 * @param buffer
+	 * @throws Exception
+     */
 	void trySendPartOfHeader(ByteBuffer buffer)  throws Exception {
 		int bytesSent=0;
 		if(buffer.remaining()>10){
@@ -61,6 +75,12 @@ public class HttpConnectTunnel extends Tunnel {
     	}
 	}
 
+	/**
+	 * 未建立隧道链接的第一次接收，是CONNECT指令的响应，根据响应值判断http代理是否正常<br/>
+	 * 隧道建立后，无需对数据做任何处理
+	 * @param buffer
+	 * @throws Exception
+     */
 	@Override
 	protected void afterReceived(ByteBuffer buffer) throws Exception {
 		if(!m_TunnelEstablished){

@@ -30,8 +30,8 @@ public class TunnelFactory {
 
 	/**
 	 * 根据配置创建隧道，主要用户创建远程的隧道
-	 * @param destAddress
-	 * @param selector
+	 * @param destAddress 隧道最终要连接的远程地址
+	 * @param selector 代理服务器的selector
 	 * @return
 	 * @throws Exception
      */
