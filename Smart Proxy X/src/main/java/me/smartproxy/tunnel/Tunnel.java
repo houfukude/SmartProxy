@@ -180,6 +180,10 @@ public abstract class Tunnel {
     protected void onTunnelEstablished() throws Exception{
 		this.beginReceive();//开始接收数据
 		m_BrotherTunnel.beginReceive();//兄弟也开始收数据吧
+
+		if (m_ServerEP != null && m_DestAddress != null) {
+			System.out.println(String.format("new Tunnel established: %s:%d=>%s:%d", m_ServerEP.getHostName(), m_ServerEP.getPort(), m_DestAddress.getHostName(), m_DestAddress.getPort()));
+		}
     }
 
     @SuppressLint("DefaultLocale")

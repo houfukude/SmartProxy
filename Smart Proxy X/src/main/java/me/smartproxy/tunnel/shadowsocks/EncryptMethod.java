@@ -46,6 +46,6 @@ public enum EncryptMethod {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return null;
+        return encryptor;
     }
 }
