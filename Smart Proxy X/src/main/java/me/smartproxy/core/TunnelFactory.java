@@ -11,6 +11,8 @@ import me.smartproxy.tunnel.httpconnect.HttpConnectConfig;
 import me.smartproxy.tunnel.httpconnect.HttpConnectTunnel;
 import me.smartproxy.tunnel.shadowsocks.ShadowsocksConfig;
 import me.smartproxy.tunnel.shadowsocks.ShadowsocksTunnel;
+import me.smartproxy.tunnel.socks5.Socks5Config;
+import me.smartproxy.tunnel.socks5.Socks5Tunnel;
 
 /**
  * 创建隧道的工厂
@@ -42,7 +44,9 @@ public class TunnelFactory {
 				return new HttpConnectTunnel((HttpConnectConfig)config,selector);
 			}else if(config instanceof ShadowsocksConfig){
 				return new ShadowsocksTunnel((ShadowsocksConfig)config,selector); 
-			} 
+			}else if (config instanceof Socks5Config){
+				return new Socks5Tunnel(config, selector);
+			}
 			throw new Exception("The config is unknow.");
 		}else {
 			return new RawTunnel(destAddress, selector);

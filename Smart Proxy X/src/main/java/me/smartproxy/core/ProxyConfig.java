@@ -17,6 +17,7 @@ import me.smartproxy.tcpip.CommonMethods;
 import me.smartproxy.tunnel.Config;
 import me.smartproxy.tunnel.httpconnect.HttpConnectConfig;
 import me.smartproxy.tunnel.shadowsocks.ShadowsocksConfig;
+import me.smartproxy.tunnel.socks5.Socks5Config;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -395,24 +396,26 @@ public class ProxyConfig {
 	 * @param offset
 	 * @throws Exception
      */
-    private void addProxyToList(String[] items,int offset) throws Exception{
-    	for (int i = offset; i < items.length; i++) {
-			 String proxyString=items[i].trim();
-			 Config config=null;
-			 if(proxyString.startsWith("ss://")){
-				 config=ShadowsocksConfig.parse(proxyString);
-			 }else {
-				 if(!proxyString.toLowerCase().startsWith("http://")){
-					 proxyString="http://"+proxyString;
-				 }
-				 config=HttpConnectConfig.parse(proxyString);
-			 }
-			 if(!m_ProxyList.contains(config)){
-				 m_ProxyList.add(config);
-				 m_DomainMap.put(config.ServerAddress.getHostName(), false); //将代理服务器的域名设置为无需代理
-			 }
+	private void addProxyToList(String[] items, int offset) throws Exception {
+		for (int i = offset; i < items.length; i++) {
+			String proxyString = items[i].trim();
+			Config config = null;
+			if (proxyString.startsWith("socks5://") || proxyString.startsWith("socks://")) {
+				config = Socks5Config.parse(proxyString);
+			} else if (proxyString.startsWith("ss://")) {
+				config = ShadowsocksConfig.parse(proxyString);
+			} else {
+				if (!proxyString.toLowerCase().startsWith("http://")) {
+					proxyString = "http://" + proxyString;
+				}
+				config = HttpConnectConfig.parse(proxyString);
+			}
+			if (!m_ProxyList.contains(config)) {
+				m_ProxyList.add(config);
+				m_DomainMap.put(config.ServerAddress.getHostName(), false); //将代理服务器的域名设置为无需代理
+			}
 		}
-    }
+	}
 
 
 	/**

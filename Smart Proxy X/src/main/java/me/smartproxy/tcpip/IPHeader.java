@@ -1,5 +1,8 @@
 package me.smartproxy.tcpip;
 
+/**
+ * IP请求头,总共20字节
+ */
 public class IPHeader {
 
 	public static final short IP = 0x0800;
