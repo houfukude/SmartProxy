@@ -8,17 +8,17 @@ import me.smartproxy.tunnel.Tunnel;
 
 public class ShadowsocksTunnel extends Tunnel {
 
-	private IEncryptor m_Encryptor;
+	private AbstractEncryptor m_Encryptor;
 	private ShadowsocksConfig m_Config;
 	private boolean m_TunnelEstablished;
 	
 	public ShadowsocksTunnel(ShadowsocksConfig config,Selector selector) throws Exception {
-		super(config.ServerAddress,selector);
-		if(config.Encryptor==null){
+		super(config.ServerAddress, selector);
+		if (config.Encryptor == null) {
 			throw new Exception("Error: The Encryptor for ShadowsocksTunnel is null.");
 		}
-		m_Config=config;
-		m_Encryptor=config.Encryptor;
+		m_Config = config;
+		m_Encryptor = (AbstractEncryptor) config.Encryptor;
 	}
 
 	@Override
@@ -32,13 +32,24 @@ public class ShadowsocksTunnel extends Tunnel {
 		buffer.put(domainBytes);
 		buffer.putShort((short)m_DestAddress.getPort());
 		buffer.flip();
-		
+
+		//加密请求数据
 		m_Encryptor.encrypt(buffer);
+
+		//如果iv不为空,则将iv放在前面
+		byte[] iv = m_Encryptor.getIV();
+		if (iv != null && iv.length > 0){
+			byte[] data = new byte[buffer.limit()];
+			buffer.get(data);
+
+			//将iv放在头部
+			buffer.clear();
+			buffer.put(iv);
+			buffer.put(data);
+			buffer.flip();
+		}
+
         if(write(buffer, true)){
-        	m_TunnelEstablished=true;
-        	onTunnelEstablished();
-        }else {
-        	m_TunnelEstablished=true;
 			this.beginReceive();
 		}
 	}
@@ -55,7 +66,16 @@ public class ShadowsocksTunnel extends Tunnel {
 
 	@Override
 	protected void afterReceived(ByteBuffer buffer) throws Exception {
-		m_Encryptor.decrypt(buffer);
+		try {
+			m_Encryptor.decrypt(buffer);
+
+			if (!m_TunnelEstablished){ //第一次解密成功,才表示真正建立起了隧道
+				m_TunnelEstablished = true;
+				onTunnelEstablished();
+			}
+		}catch (Exception e){
+			throw e;
+		}
 	}
 
 	@Override
