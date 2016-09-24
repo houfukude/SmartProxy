@@ -111,4 +111,25 @@ public class TableEncryptor extends AbstractEncryptor {
     public byte[] getIV() {
         return null;
     }
+
+
+    public static void main(String[] args){
+        TableEncryptor encryptor = new TableEncryptor();
+        encryptor.initEncryptor(EncryptMethod.TABLE, "hello");
+
+        String orig = "hello world";
+        ByteBuffer buffer = ByteBuffer.allocate(1024);
+        buffer.put(orig.getBytes());
+        buffer.flip();
+
+        encryptor.encrypt(buffer);
+
+        encryptor.decrypt(buffer);
+
+        byte[] data = new byte[buffer.remaining()];
+        buffer.get(data);
+        String decrypted = new String(data);
+
+        System.out.println(decrypted);
+    }
 }
