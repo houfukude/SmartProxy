@@ -1,12 +1,11 @@
 package me.smartproxy.tunnel.shadowsocks;
 
 import org.bouncycastle.crypto.StreamBlockCipher;
+import org.bouncycastle.crypto.StreamCipher;
 import org.bouncycastle.crypto.engines.AESFastEngine;
 import org.bouncycastle.crypto.modes.CFBBlockCipher;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.crypto.params.ParametersWithIV;
-
-import java.nio.ByteBuffer;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -17,8 +16,8 @@ import javax.crypto.spec.SecretKeySpec;
 public class BaseBouncyEncryptor extends ShadowsocksEncryptor {
 
     SecretKey secretKey;
-    StreamBlockCipher encryptCipher;
-    StreamBlockCipher decryptCipher;
+    StreamCipher encryptCipher;
+    StreamCipher decryptCipher;
 
     @Override
     protected void doInitEncryptor() {
@@ -26,7 +25,7 @@ public class BaseBouncyEncryptor extends ShadowsocksEncryptor {
             secretKey = getSecretKey();
         }
 
-        encryptCipher = createBlockCipher();
+        encryptCipher = createCipher();
 
         ParametersWithIV parameterIV = new ParametersWithIV(new KeyParameter(secretKey.getEncoded()), getEncryptIV());
         encryptCipher.init(true, parameterIV);
@@ -38,7 +37,7 @@ public class BaseBouncyEncryptor extends ShadowsocksEncryptor {
             secretKey = getSecretKey();
         }
 
-        decryptCipher = createBlockCipher();
+        decryptCipher = createCipher();
 
         ParametersWithIV parameterIV = new ParametersWithIV(new KeyParameter(secretKey.getEncoded()), decryptIV);
         decryptCipher.init(false, parameterIV);
@@ -54,7 +53,7 @@ public class BaseBouncyEncryptor extends ShadowsocksEncryptor {
      * 创建加密器, 默认创建了AES-CFB加密器
      * @return
      */
-    protected StreamBlockCipher createBlockCipher(){
+    protected StreamCipher createCipher(){
         return new CFBBlockCipher(new AESFastEngine(), method.ivLength * 8);
     }
 

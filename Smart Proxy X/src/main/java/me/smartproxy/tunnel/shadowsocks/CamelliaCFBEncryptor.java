@@ -1,6 +1,6 @@
 package me.smartproxy.tunnel.shadowsocks;
 
-import org.bouncycastle.crypto.StreamBlockCipher;
+import org.bouncycastle.crypto.StreamCipher;
 import org.bouncycastle.crypto.engines.CamelliaEngine;
 import org.bouncycastle.crypto.modes.CFBBlockCipher;
 
@@ -10,7 +10,7 @@ import org.bouncycastle.crypto.modes.CFBBlockCipher;
 public class CamelliaCFBEncryptor extends BaseBouncyEncryptor {
 
     @Override
-    protected StreamBlockCipher createBlockCipher(){
+    protected StreamCipher createCipher(){
         return new CFBBlockCipher(new CamelliaEngine(), method.ivLength * 8);
     }
 }

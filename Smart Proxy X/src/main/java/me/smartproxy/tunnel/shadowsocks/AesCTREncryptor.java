@@ -1,6 +1,6 @@
 package me.smartproxy.tunnel.shadowsocks;
 
-import org.bouncycastle.crypto.StreamBlockCipher;
+import org.bouncycastle.crypto.StreamCipher;
 import org.bouncycastle.crypto.engines.AESFastEngine;
 import org.bouncycastle.crypto.modes.SICBlockCipher;
 
@@ -10,7 +10,7 @@ import org.bouncycastle.crypto.modes.SICBlockCipher;
 public class AesCTREncryptor extends BaseBouncyEncryptor {
 
     @Override
-    protected StreamBlockCipher createBlockCipher(){
+    protected StreamCipher createCipher(){
         return new SICBlockCipher(new AESFastEngine());
     }
 
