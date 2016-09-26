@@ -30,7 +30,9 @@ import org.apache.http.util.EntityUtils;
  * VPN代理的相关配置
  */
 public class ProxyConfig {
+
 	public static final ProxyConfig Instance=new ProxyConfig();
+
 	public final static boolean IS_DEBUG=true;
 	public static String AppInstallID;			//用户安装后生成的唯一ID，存储在SharedPreferences中
 	public static String AppVersion;

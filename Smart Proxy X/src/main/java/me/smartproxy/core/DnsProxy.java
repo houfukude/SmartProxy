@@ -6,6 +6,8 @@ import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import me.smartproxy.dns.DnsPacket;
 import me.smartproxy.dns.Question;
@@ -22,6 +24,8 @@ import android.util.SparseArray;
  * DNS代理
  */
 public class DnsProxy implements Runnable {
+
+	final static Logger logger = Logger.getLogger(DnsProxy.class.getName());
 
 	/**
 	 * 记录原始的DNS请求, 代理查询之后, 查询到原始记录, 再讲结果返回给对应的进程
@@ -119,14 +123,14 @@ public class DnsProxy implements Runnable {
 						OnDnsResponseReceived(ipHeader, udpHeader, dnsPacket);
 					}
 				} catch (Exception e) {
-					e.printStackTrace();
+					logger.log(Level.SEVERE, e.getMessage(), e);
 					LocalVpnService.Instance.writeLog("Parse dns error: %s", e);
 				}
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.log(Level.SEVERE, e.getMessage(), e);
 		} finally {
-			System.out.println("DnsResolver Thread Exited.");
+			logger.log(Level.INFO, "DnsResolver Thread Exited.");
 			this.stop();
 		}
 	}
@@ -338,11 +342,10 @@ public class DnsProxy implements Runnable {
 				if(LocalVpnService.Instance.protect(m_Client)){
 					m_Client.send(packet);
 				}else {
-					System.err.println("VPN protect udp socket failed.");
+					logger.log(Level.SEVERE, "VPN protect udp socket failed.");
 				}
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				logger.log(Level.SEVERE, e.getMessage(), e);
 			}
 		}
 	}

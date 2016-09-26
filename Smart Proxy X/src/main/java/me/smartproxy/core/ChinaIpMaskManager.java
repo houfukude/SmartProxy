@@ -2,6 +2,8 @@ package me.smartproxy.core;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import me.smartproxy.tcpip.CommonMethods;
 
@@ -12,6 +14,8 @@ import android.util.SparseIntArray;
  * 中国的IP地址管理器，用了判断IP地址是否来自中国
  */
 public class ChinaIpMaskManager {
+
+    final static Logger logger = Logger.getLogger(ChinaIpMaskManager.class.getName());
 
     static SparseIntArray ChinaIpMaskDict = new SparseIntArray(3000);   //所有中国的IP地址及掩码
     static SparseIntArray MaskDict = new SparseIntArray();                    //所有的掩码集合
@@ -55,9 +59,10 @@ public class ChinaIpMaskManager {
                 }
             }
             inputStream.close();
-            System.out.printf("ChinaIpMask records count: %d\n", ChinaIpMaskDict.size());
+
+            logger.log(Level.INFO, "ChinaIpMask records count: %d\n", ChinaIpMaskDict.size());
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, e.getMessage(), e);
         }
     }
 }

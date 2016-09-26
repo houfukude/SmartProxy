@@ -3,8 +3,13 @@ package me.smartproxy.tcpip;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class CommonMethods {
+
+	final static Logger logger = Logger.getLogger(CommonMethods.class.getName());
+
 
 	public static InetAddress ipIntToInet4Address(int ip){
 		byte[] ipAddress=new byte[4];
@@ -12,8 +17,7 @@ public class CommonMethods {
         try {
 			return  Inet4Address.getByAddress(ipAddress);
 		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.log(Level.SEVERE, e.getMessage(), e);
 			return null;
 		}
 	}

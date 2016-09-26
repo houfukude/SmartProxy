@@ -38,6 +38,13 @@ public class NatSessionManager {
         }
     }
 
+    /**
+     * 创建NAT规则
+     * @param portKey 本地端口
+     * @param remoteIP 远程IP
+     * @param remotePort 远程端口
+     * @return
+     */
     public static NatSession createSession(int portKey, int remoteIP, short remotePort) {
         if (Sessions.size() > MAX_SESSION_COUNT) {
             clearExpiredSessions();//清理过期的会话。

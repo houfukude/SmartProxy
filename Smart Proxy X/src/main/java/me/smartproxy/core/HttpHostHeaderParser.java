@@ -1,6 +1,8 @@
 package me.smartproxy.core;
 
 import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import me.smartproxy.tcpip.CommonMethods;
 
@@ -9,6 +11,8 @@ import me.smartproxy.tcpip.CommonMethods;
  * 从TCP数据包中分析Http请求Host的辅助类
  */
 public class HttpHostHeaderParser {
+
+    final static Logger logger = Logger.getLogger(HttpHostHeaderParser.class.getName());
 
     public static String parseHost(byte[] buffer, int offset, int count) {
         try {
@@ -25,7 +29,7 @@ public class HttpHostHeaderParser {
                     return getSNI(buffer, offset, count);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, e.getMessage(), e);
             LocalVpnService.Instance.writeLog("Error: parseHost:%s", e);
         }
         return null;
@@ -72,7 +76,7 @@ public class HttpHostHeaderParser {
             offset += compressionMethodLength;
 
             if (offset == limit) {
-                System.err.println("TLS Client Hello packet doesn't contains SNI info.(offset == limit)");
+                logger.log(Level.SEVERE, "TLS Client Hello packet doesn't contains SNI info.(offset == limit)");
                 return null;
             }
 
@@ -82,7 +86,7 @@ public class HttpHostHeaderParser {
             offset += 2;
 
             if (offset + extensionsLength > limit) {
-                System.err.println("TLS Client Hello packet is incomplete.");
+                logger.log(Level.SEVERE, "TLS Client Hello packet is incomplete.");
                 return null;
             }
 
@@ -105,10 +109,10 @@ public class HttpHostHeaderParser {
                 }
             }
 
-            System.err.println("TLS Client Hello packet doesn't contains Host field info.");
+            logger.log(Level.SEVERE, "TLS Client Hello packet doesn't contains Host field info.");
             return null;
         } else {
-            System.err.println("Bad TLS Client Hello packet.");
+            logger.log(Level.SEVERE, "Bad TLS Client Hello packet.");
             return null;
         }
     }

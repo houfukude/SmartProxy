@@ -248,8 +248,8 @@ public abstract class Tunnel {
 					this.beginReceive();//开始接收代理服务器响应数据
 				}
 			}else {
-				//TODO 有没有一次写不完的情况?
-				//貌似比较ByteBuffer比较只能,如果一次未写完,则不取消写入的SelectionKey,会等待下次继续写
+				//有没有一次写不完的情况?
+				//貌似使用ByteBuffer比较智能,如果一次未写完,则不取消写入的SelectionKey,会等待下次继续写
 			}
 		} catch (Exception e) {
 			this.dispose();

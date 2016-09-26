@@ -71,13 +71,14 @@ public class LocalVpnService extends VpnService implements Runnable {
 		m_DNSBuffer = ((ByteBuffer) ByteBuffer.wrap(m_Packet).position(28)).slice(); //去除20字节的IP头和8个字节UDP头
 
 		Instance=this;
-		
-		System.out.printf("New VPNService(%d)\n",ID);
+
+		Log.d(TAG, String.format("New VPNService(%d)\n", ID));
 	}
 
 	@Override
 	public void onCreate() {
-		System.out.printf("VPNService(%s) created.\n", ID);
+		Log.d(TAG, String.format("VPNService(%s) created.\n", ID));
+
 		// Start a new session by creating a new thread.
 		m_VPNThread = new Thread(this, "VPNServiceThread");
 		m_VPNThread.start();
@@ -89,7 +90,10 @@ public class LocalVpnService extends VpnService implements Runnable {
 		IsRunning=true;
 		return super.onStartCommand(intent, flags, startId);
 	}
-	
+
+	/**
+	 * VPN状态改变的监听器
+	 */
 	public interface onStatusChangedListener {
 		public void onStatusChanged(String status,Boolean isRunning);
 		public void onLogReceived(String logString);
@@ -135,7 +139,7 @@ public class LocalVpnService extends VpnService implements Runnable {
 			CommonMethods.ComputeUDPChecksum(ipHeader, udpHeader);
 			this.m_VPNOutputStream.write(ipHeader.m_Data, ipHeader.m_Offset, ipHeader.getTotalLength());
 		} catch (IOException e) {
-			e.printStackTrace();
+			Log.e(TAG, e.getMessage(), e);
 		}
 	}
 	
@@ -223,9 +227,9 @@ public class LocalVpnService extends VpnService implements Runnable {
 				}
 			}
 		} catch (InterruptedException e) {
-			System.out.println(e);
+			Log.e(TAG, e.getMessage(), e);
 		} catch (Exception e) {
-			e.printStackTrace();
+			Log.e(TAG, e.getMessage(), e);
 			writeLog("Fatal error: %s",e.toString());
 		} finally {
 			writeLog("SmartProxy terminated.");
@@ -347,7 +351,7 @@ public class LocalVpnService extends VpnService implements Runnable {
 			try {
 				Thread.sleep(100);
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				Log.e(TAG, e.getMessage(), e);
 			}
 		}
 	}
@@ -453,12 +457,13 @@ public class LocalVpnService extends VpnService implements Runnable {
 		
 		stopSelf();
 		IsRunning = false;
-		System.exit(0);
+
+		//FIXME: System.exit(0);
 	}
 	
 	@Override
 	public void onDestroy() {
-		System.out.printf("VPNService(%s) destoried.\n", ID);
+		Log.i(TAG, String.format("VPNService(%s) destoried.\n", ID));
 		if (m_VPNThread != null) {
 			m_VPNThread.interrupt();
 		}
