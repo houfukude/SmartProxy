@@ -3,22 +3,25 @@ package me.smartproxy.tunnel.shadowsocks;
 import java.nio.ByteBuffer;
 import java.nio.channels.Selector;
 
-import me.smartproxy.tunnel.IEncryptor;
 import me.smartproxy.tunnel.Tunnel;
 
 public class ShadowsocksTunnel extends Tunnel {
 
-	private AbstractEncryptor m_Encryptor;
+	private ShadowsocksEncryptor m_Encryptor;
 	private ShadowsocksConfig m_Config;
 	private boolean m_TunnelEstablished;
-	
+
+	private boolean isFirstReceive = true;
+
 	public ShadowsocksTunnel(ShadowsocksConfig config,Selector selector) throws Exception {
 		super(config.ServerAddress, selector);
 		if (config.Encryptor == null) {
 			throw new Exception("Error: The Encryptor for ShadowsocksTunnel is null.");
 		}
 		m_Config = config;
-		m_Encryptor = (AbstractEncryptor) config.Encryptor;
+
+		//create a new encryptor each time
+		m_Encryptor = EncryptorFactory.createEncryptorByConfig(config);
 	}
 
 	@Override
@@ -37,9 +40,9 @@ public class ShadowsocksTunnel extends Tunnel {
 		m_Encryptor.encrypt(buffer);
 
 		//如果iv不为空,则将iv放在前面
-		byte[] iv = m_Encryptor.getIV();
+		byte[] iv = m_Encryptor.getEncryptIV();
 		if (iv != null && iv.length > 0){
-			byte[] data = new byte[buffer.limit()];
+			byte[] data = new byte[buffer.remaining()];
 			buffer.get(data);
 
 			//将iv放在头部
@@ -67,6 +70,19 @@ public class ShadowsocksTunnel extends Tunnel {
 	@Override
 	protected void afterReceived(ByteBuffer buffer) throws Exception {
 		try {
+			//第一次接收设置IV
+			if (m_Encryptor.getIVLength() > 0 && isFirstReceive) {
+				synchronized (this) {
+					if (isFirstReceive) { //set IV
+						byte[] decryptIV = new byte[m_Encryptor.getIVLength()];
+						buffer.get(decryptIV);
+						m_Encryptor.initDecryptor(decryptIV);
+
+						isFirstReceive = false;
+					}
+				}
+			}
+
 			m_Encryptor.decrypt(buffer);
 
 			if (!m_TunnelEstablished){ //第一次解密成功,才表示真正建立起了隧道

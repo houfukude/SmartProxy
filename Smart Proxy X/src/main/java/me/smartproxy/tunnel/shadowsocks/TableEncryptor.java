@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 
 
-public class TableEncryptor extends AbstractEncryptor {
+public class TableEncryptor extends ShadowsocksEncryptor {
 
     private byte[] encryptTable = new byte[256];
     private byte[] decryptTable = new byte[256];
@@ -108,7 +108,27 @@ public class TableEncryptor extends AbstractEncryptor {
     }
 
     @Override
-    public byte[] getIV() {
+    public byte[] getEncryptIV() {
+        return null;
+    }
+
+    @Override
+    protected void doInitEncryptor() {
+
+    }
+
+    @Override
+    protected void doInitDecryptor() {
+
+    }
+
+    @Override
+    protected byte[] doEncrypt(byte[] data) {
+        return null;
+    }
+
+    @Override
+    protected byte[] doDecrypt(byte[] data) {
         return null;
     }
 

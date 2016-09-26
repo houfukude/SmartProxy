@@ -15,12 +15,6 @@ public class EncryptUtil {
      * @param iv
      */
     public static void getSalt(byte[] iv){
-        try {
-            SecureRandom sr = SecureRandom.getInstance("SHA1PRNG");
-            sr.nextBytes(iv);
-        } catch (NoSuchAlgorithmException e) {
-            Random rnd = new Random();
-            rnd.nextBytes(iv);
-        }
+        new SecureRandom().nextBytes(iv);
     }
 }

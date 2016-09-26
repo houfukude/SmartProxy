@@ -5,14 +5,18 @@ package me.smartproxy.tunnel.shadowsocks;
  */
 public enum EncryptMethod {
 
-    TABLE("table", 0 , 0, TableEncryptor.class);
+    TABLE("table", 0 , 0, TableEncryptor.class),
+    AES_128_CFB("aes-128-cfb", 16, 16, AesCFBEncryptor.class),
+    AES_192_CFB("aes-192-cfb", 24, 16, AesCFBEncryptor.class),
+    AES_256_CFB("aes-256-cfb", 32, 16, AesCFBEncryptor.class);
 
-    String name;
-    int keyLength;
-    int ivLength;
-    Class<? extends AbstractEncryptor> encryptorClass;
+    public String name;
+    public int keyLength;
+    public int ivLength;
 
-    EncryptMethod(String name, int keyLength, int ivLength, Class<? extends AbstractEncryptor> encryptorClass){
+    Class<? extends ShadowsocksEncryptor> encryptorClass;
+
+    EncryptMethod(String name, int keyLength, int ivLength, Class<? extends ShadowsocksEncryptor> encryptorClass){
         this.name = name;
         this.keyLength = keyLength;
         this.ivLength = ivLength;
@@ -38,8 +42,8 @@ public enum EncryptMethod {
      * @param password
      * @return
      */
-    public AbstractEncryptor createEncryptor(String password){
-        AbstractEncryptor encryptor = null;
+    public ShadowsocksEncryptor createEncryptor(String password){
+        ShadowsocksEncryptor encryptor = null;
         try {
             encryptor = encryptorClass.newInstance();
             encryptor.initEncryptor(this, password);

@@ -1,14 +1,9 @@
 package me.smartproxy.tunnel.shadowsocks;
 
-import java.util.HashMap;
-
-import me.smartproxy.tunnel.IEncryptor;
 
 public class EncryptorFactory {
 	
-	private static HashMap<String, IEncryptor> EncryptorCache = new HashMap<String, IEncryptor>();
- 
-	public static AbstractEncryptor createEncryptorByConfig(ShadowsocksConfig config) throws Exception{
+	public static ShadowsocksEncryptor createEncryptorByConfig(ShadowsocksConfig config) throws Exception{
 		EncryptMethod encryptMethod = EncryptMethod.parseMethod(config.EncryptMethod);
 
 		if (encryptMethod == null) {
