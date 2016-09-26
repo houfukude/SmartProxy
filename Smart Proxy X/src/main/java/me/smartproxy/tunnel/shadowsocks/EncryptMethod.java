@@ -8,6 +8,7 @@ import me.smartproxy.tunnel.shadowsocks.bcencryptor.Cast5CFBEncryptor;
 import me.smartproxy.tunnel.shadowsocks.bcencryptor.Chacha20Encryptor;
 import me.smartproxy.tunnel.shadowsocks.bcencryptor.DesCFBEncryptor;
 import me.smartproxy.tunnel.shadowsocks.bcencryptor.IdeaCFBEncryptor;
+import me.smartproxy.tunnel.shadowsocks.bcencryptor.RC2CFBEncryptor;
 import me.smartproxy.tunnel.shadowsocks.bcencryptor.Rc4Encryptor;
 import me.smartproxy.tunnel.shadowsocks.bcencryptor.Rc4Md5Encryptor;
 import me.smartproxy.tunnel.shadowsocks.bcencryptor.Salsa20Encryptor;
@@ -30,6 +31,7 @@ public enum EncryptMethod {
     CAMELLIA_256_CFB("camellia-256-cfb", 32, 16, CamelliaCFBEncryptor.class),
     DES_CFB("des-cfb", 8, 8, DesCFBEncryptor.class),
     IDEA_CFB("idea-cfb", 16, 8, IdeaCFBEncryptor.class),
+    RC2_CFB("rc2-cfb", 16, 8, RC2CFBEncryptor.class),
     RC4("rc4", 16, 0, Rc4Encryptor.class),
     RC4_MD5("rc4-md5", 16, 16, Rc4Md5Encryptor.class),
     BF_CFB("bf-cfb", 16, 8, BfCFBEncryptor.class),
