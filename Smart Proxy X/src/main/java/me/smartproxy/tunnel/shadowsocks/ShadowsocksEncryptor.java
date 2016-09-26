@@ -13,7 +13,7 @@ public abstract class ShadowsocksEncryptor implements IEncryptor {
     protected EncryptMethod method;
     protected String password;
 
-    protected ShadowSocksKey shadowsocksKey;
+    protected ShadowsocksKey shadowsocksKey;
 
     protected byte[] encryptIV;
     protected byte[] decryptIV;
@@ -32,7 +32,7 @@ public abstract class ShadowsocksEncryptor implements IEncryptor {
             EncryptUtil.getSalt(encryptIV);
         }
 
-        shadowsocksKey = new ShadowSocksKey(password, method.keyLength);
+        shadowsocksKey = new ShadowsocksKey(password, method.keyLength);
 
         doInitEncryptor();
 
