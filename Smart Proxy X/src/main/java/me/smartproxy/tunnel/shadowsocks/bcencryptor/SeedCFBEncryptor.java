@@ -1,7 +1,6 @@
-package me.smartproxy.tunnel.shadowsocks;
+package me.smartproxy.tunnel.shadowsocks.bcencryptor;
 
 import org.bouncycastle.crypto.StreamCipher;
-import org.bouncycastle.crypto.engines.CAST5Engine;
 import org.bouncycastle.crypto.engines.SEEDEngine;
 import org.bouncycastle.crypto.modes.CFBBlockCipher;
 

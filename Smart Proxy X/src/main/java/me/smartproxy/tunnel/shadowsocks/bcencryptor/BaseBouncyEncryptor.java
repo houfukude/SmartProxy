@@ -1,6 +1,6 @@
-package me.smartproxy.tunnel.shadowsocks;
+package me.smartproxy.tunnel.shadowsocks.bcencryptor;
 
-import org.bouncycastle.crypto.StreamBlockCipher;
+import org.bouncycastle.crypto.CipherParameters;
 import org.bouncycastle.crypto.StreamCipher;
 import org.bouncycastle.crypto.engines.AESFastEngine;
 import org.bouncycastle.crypto.modes.CFBBlockCipher;
@@ -10,42 +10,54 @@ import org.bouncycastle.crypto.params.ParametersWithIV;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
+import me.smartproxy.tunnel.shadowsocks.ShadowsocksEncryptor;
+
 /**
  * Created by hy on 9/22/16.
  */
 public class BaseBouncyEncryptor extends ShadowsocksEncryptor {
 
     SecretKey secretKey;
+
     StreamCipher encryptCipher;
     StreamCipher decryptCipher;
 
     @Override
     protected void doInitEncryptor() {
-        if (secretKey == null){
-            secretKey = getSecretKey();
-        }
-
         encryptCipher = createCipher();
-
-        ParametersWithIV parameterIV = new ParametersWithIV(new KeyParameter(secretKey.getEncoded()), getEncryptIV());
-        encryptCipher.init(true, parameterIV);
+        encryptCipher.init(true, createCipherParameters(getEncryptIV()));
     }
+
 
     @Override
     protected void doInitDecryptor() {
-        if (secretKey == null){
-            secretKey = getSecretKey();
-        }
-
         decryptCipher = createCipher();
-
-        ParametersWithIV parameterIV = new ParametersWithIV(new KeyParameter(secretKey.getEncoded()), decryptIV);
-        decryptCipher.init(false, parameterIV);
+        decryptCipher.init(false, createCipherParameters(decryptIV));
     }
 
 
     protected SecretKey getSecretKey(){
         return new SecretKeySpec(shadowsocksKey.getEncoded(), "AES");
+    }
+
+    /**
+     * 创建加密的参数,包含密钥和IV
+     * @param iv
+     * @return
+     */
+    protected CipherParameters createCipherParameters(byte[] iv) {
+        CipherParameters cipherParameters = null;
+
+        if (secretKey == null){
+            secretKey = getSecretKey();
+        }
+
+        if (method.ivLength > 0) {
+            cipherParameters = new ParametersWithIV(new KeyParameter(secretKey.getEncoded()), iv);
+        } else {
+            cipherParameters = new KeyParameter(secretKey.getEncoded());
+        }
+        return cipherParameters;
     }
 
 

@@ -1,4 +1,4 @@
-package me.smartproxy.tunnel.shadowsocks;
+package me.smartproxy.tunnel.shadowsocks.bcencryptor;
 
 import org.bouncycastle.crypto.StreamCipher;
 import org.bouncycastle.crypto.engines.RC4Engine;
@@ -7,7 +7,7 @@ import org.bouncycastle.crypto.engines.RC4Engine;
  * Created by hy on 9/26/16.
  */
 
-public class Rc4Md5Encryptor extends BaseBouncyEncryptor {
+public class Rc4Encryptor extends BaseBouncyEncryptor {
 
     @Override
     protected StreamCipher createCipher(){

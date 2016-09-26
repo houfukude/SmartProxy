@@ -1,8 +1,7 @@
-package me.smartproxy.tunnel.shadowsocks;
+package me.smartproxy.tunnel.shadowsocks.bcencryptor;
 
 import org.bouncycastle.crypto.StreamCipher;
 import org.bouncycastle.crypto.engines.ChaChaEngine;
-import org.bouncycastle.crypto.engines.RC4Engine;
 
 /**
  * Created by hy on 9/26/16.
