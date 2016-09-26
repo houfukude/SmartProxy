@@ -55,6 +55,9 @@ public class ShadowsocksTunnel extends Tunnel {
         if(write(buffer, true)){
 			this.beginReceive();
 		}
+
+		m_TunnelEstablished = true;
+		onTunnelEstablished();
 	}
 
 	@Override
@@ -85,10 +88,6 @@ public class ShadowsocksTunnel extends Tunnel {
 
 			m_Encryptor.decrypt(buffer);
 
-			if (!m_TunnelEstablished){ //第一次解密成功,才表示真正建立起了隧道
-				m_TunnelEstablished = true;
-				onTunnelEstablished();
-			}
 		}catch (Exception e){
 			throw e;
 		}
