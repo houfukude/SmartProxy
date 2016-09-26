@@ -11,6 +11,7 @@ import me.smartproxy.tunnel.shadowsocks.bcencryptor.IdeaCFBEncryptor;
 import me.smartproxy.tunnel.shadowsocks.bcencryptor.Rc4Encryptor;
 import me.smartproxy.tunnel.shadowsocks.bcencryptor.Rc4Md5Encryptor;
 import me.smartproxy.tunnel.shadowsocks.bcencryptor.Salsa20Encryptor;
+import me.smartproxy.tunnel.shadowsocks.bcencryptor.SeedCFBEncryptor;
 
 /**
  * Created by hy on 9/22/16.
@@ -35,7 +36,7 @@ public enum EncryptMethod {
     CAST5_CFB("cast5-cfb", 16, 8, Cast5CFBEncryptor.class),
     CHACHA20("chacha20", 32, 8, Chacha20Encryptor.class),
     SALSA20("salsa20", 32, 8, Salsa20Encryptor.class),
-    SEED_CFB("seed-cfb", 16, 16, Salsa20Encryptor.class);
+    SEED_CFB("seed-cfb", 16, 16, SeedCFBEncryptor.class);
 
     public String name;
     public int keyLength;
