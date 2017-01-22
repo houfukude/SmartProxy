@@ -23,7 +23,7 @@ public class TcpProxyServer implements Runnable {
 	Selector m_Selector;
 	ServerSocketChannel m_ServerSocketChannel;
 	Thread m_ServerThread;
- 
+
 	public TcpProxyServer(int port) throws IOException {
 		m_Selector = Selector.open();
 		m_ServerSocketChannel = ServerSocketChannel.open();
@@ -33,13 +33,13 @@ public class TcpProxyServer implements Runnable {
 		this.Port=(short) m_ServerSocketChannel.socket().getLocalPort();
 		System.out.printf("AsyncTcpServer listen on %d success.\n", this.Port&0xFFFF);
 	}
-	
+
 	public void start(){
 		m_ServerThread=new Thread(this);
 		m_ServerThread.setName("TcpProxyServerThread");
 		m_ServerThread.start();
 	}
-	
+
 	public void stop(){
 		this.Stopped=true;
 		if(m_Selector!=null){
@@ -50,7 +50,7 @@ public class TcpProxyServer implements Runnable {
 				e.printStackTrace();
 			}
 		}
-			
+
 		if(m_ServerSocketChannel!=null){
 			try {
 				m_ServerSocketChannel.close();
@@ -60,7 +60,7 @@ public class TcpProxyServer implements Runnable {
 			}
 		}
 	}
-	
+
 	@Override
 	public void run() {
 		try {
@@ -71,18 +71,18 @@ public class TcpProxyServer implements Runnable {
 					SelectionKey key = keyIterator.next();
 					if (key.isValid()) {
 						try {
-							    if (key.isReadable()) {
-							    	((Tunnel)key.attachment()).onReadable(key);
-								}
-							    else if(key.isWritable()){
-							    	((Tunnel)key.attachment()).onWritable(key);
-							    }
-							    else if (key.isConnectable()) {
-							    	((Tunnel)key.attachment()).onConnectable();
-								}
-							    else  if (key.isAcceptable()) {
-									onAccepted(key);
-								}
+							if (key.isReadable()) {
+								((Tunnel)key.attachment()).onReadable(key);
+							}
+							else if(key.isWritable()){
+								((Tunnel)key.attachment()).onWritable(key);
+							}
+							else if (key.isConnectable()) {
+								((Tunnel)key.attachment()).onConnectable();
+							}
+							else  if (key.isAcceptable()) {
+								onAccepted(key);
+							}
 						} catch (Exception e) {
 							System.out.println(e.toString());
 						}
@@ -107,12 +107,12 @@ public class TcpProxyServer implements Runnable {
 					System.out.printf("%d/%d:[PROXY] %s=>%s:%d\n",NatSessionManager.getSessionCount(), Tunnel.SessionCount,session.RemoteHost,CommonMethods.ipIntToString(session.RemoteIP),session.RemotePort&0xFFFF);
 				return InetSocketAddress.createUnresolved(session.RemoteHost, session.RemotePort&0xFFFF);
 			}else {
-			    return new InetSocketAddress(localChannel.socket().getInetAddress(),session.RemotePort&0xFFFF);
+				return new InetSocketAddress(localChannel.socket().getInetAddress(),session.RemotePort&0xFFFF);
 			}
 		}
 		return null;
 	}
-	
+
 	void onAccepted(SelectionKey key){
 		Tunnel localTunnel =null;
 		try {
@@ -122,9 +122,9 @@ public class TcpProxyServer implements Runnable {
 			InetSocketAddress destAddress=getDestAddress(localChannel);
 			if(destAddress!=null){
 				Tunnel remoteTunnel=TunnelFactory.createTunnelByConfig(destAddress,m_Selector);
-				remoteTunnel.setBrotherTunnel(localTunnel);//¹ØÁªĞÖµÜ
-				localTunnel.setBrotherTunnel(remoteTunnel);//¹ØÁªĞÖµÜ
-				remoteTunnel.connect(destAddress);//¿ªÊ¼Á¬½Ó
+				remoteTunnel.setBrotherTunnel(localTunnel);//å…³è”å…„å¼Ÿ
+				localTunnel.setBrotherTunnel(remoteTunnel);//å…³è”å…„å¼Ÿ
+				remoteTunnel.connect(destAddress);//å¼€å§‹è¿æ¥
 			}
 			else {
 				LocalVpnService.Instance.writeLog("Error: socket(%s:%d) target host is null.",localChannel.socket().getInetAddress().toString(),localChannel.socket().getPort());
@@ -138,5 +138,5 @@ public class TcpProxyServer implements Runnable {
 			}
 		}
 	}
- 
+
 }
