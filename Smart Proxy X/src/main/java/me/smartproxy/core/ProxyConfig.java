@@ -43,6 +43,7 @@ public class ProxyConfig {
     String m_session_name;
     String m_user_agent;
     boolean m_outside_china_use_proxy = true;
+    boolean m_all_use_proxy = false;
     boolean m_isolate_http_host_header = true;
     int m_mtu;
 
@@ -215,6 +216,9 @@ public class ProxyConfig {
         if (isFakeIP(ip))
             return true;
 
+        if (m_all_use_proxy){
+            return true;
+        }
         if (m_outside_china_use_proxy && ip != 0) {
             return !ChinaIpMaskManager.isIPInChina(ip);
         }
@@ -312,6 +316,8 @@ public class ProxyConfig {
                         m_user_agent = line.substring(line.indexOf(" ")).trim();
                     } else if (tagString.equals("outside_china_use_proxy")) {
                         m_outside_china_use_proxy = convertToBool(items[1]);
+                    } else if (tagString.equals("all_use_proxy")) {
+                        m_all_use_proxy = convertToBool(items[1]);
                     } else if (tagString.equals("isolate_http_host_header")) {
                         m_isolate_http_host_header = convertToBool(items[1]);
                     } else if (tagString.equals("mtu")) {
