@@ -365,7 +365,7 @@ public class LocalVpnService extends VpnService implements Runnable {
 		ArrayList<String> servers = new ArrayList<String>();
 		for (String name : new String[] { "net.dns1", "net.dns2", "net.dns3", "net.dns4", }) {
 			String value = (String) method.invoke(null, name);
-			if (value != null && !"".equals(value) && !servers.contains(value)) {
+			if (value != null && !"".equals(value) && !servers.contains(value) && !value.contains(":")) {
 				servers.add(value);
 				builder.addRoute(value, 32);
 				if(ProxyConfig.IS_DEBUG)
