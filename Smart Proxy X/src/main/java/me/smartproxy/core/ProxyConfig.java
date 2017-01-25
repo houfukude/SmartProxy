@@ -216,7 +216,7 @@ public class ProxyConfig {
         if (isFakeIP(ip))
             return true;
 
-        if (m_all_use_proxy){
+        if (m_all_use_proxy && ip != 0){
             return true;
         }
         if (m_outside_china_use_proxy && ip != 0) {
