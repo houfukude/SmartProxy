@@ -18,4 +18,6 @@
     <string name="exit_confirm_info">这将会断开VPN连接，确定要退出吗？</string>
     <string name="err_invalid_url">无效的配置地址</string>
     <string name="config_url_hint">URL或本地文件路径</string>
+    <string name="dialog_title">需要安装条码扫描器</string>
+    <string name="dialog_message">使用二维码功能需要，调用外部二维码扫描器。是否安装？</string>
 </resources>

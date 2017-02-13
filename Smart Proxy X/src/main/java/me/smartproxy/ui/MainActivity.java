@@ -17,15 +17,23 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.*;
+import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.widget.EditText;
+import android.widget.ScrollView;
+import android.widget.Switch;
+import android.widget.TextView;
+import android.widget.Toast;
+
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
-import me.smartproxy.R;
-import me.smartproxy.core.LocalVpnService;
 
 import java.io.File;
 import java.util.Calendar;
+import java.util.Locale;
+
+import me.smartproxy.R;
+import me.smartproxy.core.LocalVpnService;
 
 public class MainActivity extends Activity implements
         View.OnClickListener,
@@ -79,7 +87,7 @@ public class MainActivity extends Activity implements
         SharedPreferences preferences = getSharedPreferences("SmartProxy", MODE_PRIVATE);
         Editor editor = preferences.edit();
         editor.putString(CONFIG_URL_KEY, configUrl);
-        editor.commit();
+        editor.apply();
     }
 
     String getVersionName() {
@@ -153,10 +161,15 @@ public class MainActivity extends Activity implements
     }
 
     private void scanForConfigUrl() {
-        new IntentIntegrator(this)
-                .setResultDisplayDuration(0)
-                .setPrompt(getString(R.string.config_url_scan_hint))
-                .initiateScan(IntentIntegrator.QR_CODE_TYPES);
+        IntentIntegrator integrator = new IntentIntegrator(this);
+        String locale =Locale.getDefault().getLanguage();
+        if (locale.equals("zh")){
+            integrator.setTitleByID(R.string.dialog_title);
+            integrator.setMessageByID(R.string.dialog_message);
+            integrator.setButtonYesByID(R.string.btn_ok);
+            integrator.setButtonNoByID(R.string.btn_cancel);
+        }
+        integrator.initiateScan(IntentIntegrator.QR_CODE_TYPES);
     }
 
     private void showConfigUrlInputDialog() {
